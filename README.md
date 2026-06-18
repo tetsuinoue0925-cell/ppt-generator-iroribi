@@ -64,6 +64,8 @@ node src/generate.js <入力>.json <出力>.pptx
 
 `presentation.theme`（または env `DECK_THEME`）で選択。現状 `iroribi` / `navy` / `graphite`。
 
+**自分のブランドでテーマを作れる。** テーマファイルを1つ足すだけで全レイアウトがその配色で描ける（レイアウトのコードは触らない）。作り方と Claude Code への頼み方は [`CLAUDE.md` の「自分のテーマを作る」](CLAUDE.md#自分のテーマを作る拡張ガイド) を参照。
+
 ---
 
 ## 生成物の検査（デバッグ時）

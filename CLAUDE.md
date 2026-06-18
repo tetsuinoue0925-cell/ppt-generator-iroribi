@@ -13,21 +13,16 @@ PptxGenJS でテーマ・レイアウトをコード定義し、JSON を流し�
 
 ## Commands
 
-**ホストには Node も依存も入れない。** 開発・調整・生成はすべてコンテナ内で行う（`.devcontainer/`）。
+このリポジトリはテンプレート。動かし方は**好きな方法でよい**（どれも出力は `output/*.pptx`）。
 
-標準（devcontainer 内で開発）:
-1. VS Code「Reopen in Container」または `devcontainer up`（CLI）でコンテナに入る。
-   依存は `postCreateCommand` の `npm ci` で自動導入（node_modules は名前付きボリュームに隔離・ホストに漏れない）。
-2. コンテナ内で直接実行:
-   - 生成: `npm run generate`（入力 `input/slides.json` → 出力 `output/proposal.pptx`）
-   - スキーマ検証のみ: `npm run validate`
-   - 出力は workspace bind マウント経由でホスト `output/` に出る → ホスト PowerPoint で開く。
+- **ローカル Node**（Node 20+）: `npm ci` →
+  - 生成: `npm run generate`（既定 `input/slides.json` → `output/proposal.pptx`）／パス指定: `node src/generate.js <入力>.json <出力>.pptx`
+  - 検証: `npm run validate`
+- **devcontainer**: VS Code「Reopen in Container」または `devcontainer up`。依存は `postCreateCommand` の `npm ci` で自動導入。あとは上記コマンドをそのまま実行。
+- **Docker（Node を入れたくないとき）**: `docker compose run --rm generate` / `docker compose run --rm validate`。
+  パス指定する場合は `docker compose run --rm generate node src/generate.js <入力>.json <出力>.pptx`（`./input` `./output` `./cases` `./assets` はマウント済み）。
 
-コンテナに入らず一発生成したいとき（バッチ）:
-- 生成: `docker compose run --rm generate`
-- 検証: `docker compose run --rm validate`
-
-> ローカル Node 直実行（`node src/generate.js`）はしない。ホストを汚さないため、必ず上記のいずれかを使う。
+入力形式（設計JSON方言／リッチデッキ方言）は `generate.js` が自動判定する。
 
 ## Architecture
 
@@ -42,7 +37,7 @@ PptxGenJS でテーマ・レイアウトをコード定義し、JSON を流し�
 - `src/theme.js` — 設計JSON方言のテーマ（`theme`）＋スライドマスター。
 - `src/themes/` — **リッチデッキ方言のテーマ・レジストリ（1テーマ=1ファイル）。** ブランド定義の正本。色の役割キーは `src/themes/index.js` 冒頭のコントラクト。現状 `iroribi`/`navy`/`graphite`。
 - `src/layouts/` — 設計JSON方言の描画関数（`title`/`message`/`cards_3`/`agenda`/`section`/`two_column`/`cards_4`/`summary`/`process`）。1 レイアウト = 1 ファイル。
-- `src/layouts-deck/` — リッチデッキ方言の描画関数（11 型）。`index.js` が type→関数のディスパッチ。
+- `src/layouts-deck/` — リッチデッキ方言の描画関数（13 型）。`index.js` が type→関数のディスパッチ。
 - `src/richtext.js` — JSON値内の HTML 断片（`<strong>`等）を PptxGenJS リッチテキストへ変換。**HTML はレンダリングしない**（装飾意図だけ移植）。
 - `src/schema*.js` + `schema/*.schema.json` — ajv 検証（設計JSON: `slides.schema.json` / デッキ: `deck.schema.json`）。
 
@@ -83,10 +78,55 @@ git で追跡しない（`.gitignore` で除外）。テンプレ本体に機密
 ## テーマ／レイアウトのブラッシュアップ
 
 - 色を変える: `src/themes/<name>.js` の役割キーを編集（共通キーは `src/themes/index.js`）。
-- 新テーマ追加: `src/themes/<name>.js` を作りキーを全部埋め、`index.js` の registry に追加。
 - 配置（位置・余白・サイズ）: `src/layouts-deck/<type>.js`（1型=1ファイル）を編集。
 - 確認用に全 type を網羅した `input/_theme_sampler_deck.json` がある。各テーマで生成して見比べる:
   `DECK_THEME=<name> node src/generate.js input/_theme_sampler_deck.json output/_sampler_<name>.pptx`
+
+## 自分のテーマを作る（拡張ガイド）
+
+このツールは「レイアウト（配置ロジック）」と「テーマ（色・フォント）」が分離している。**レイアウト側は色を役割名でしか参照しない**ので、テーマファイルを1つ足すだけで全 13 type がそのブランドで描ける。レイアウトのコードは触らなくてよい。
+
+### 手順
+
+1. `src/themes/<name>.js` を新規作成し、下記キーを**全部**埋める（`src/themes/index.js` 冒頭がコントラクトの正本）。
+   既存の `src/themes/navy.js` を雛形にコピーして色を差し替えるのが速い。
+
+   ```js
+   module.exports = {
+     name: "<name>",
+     layout: { name: "WIDE_16x9", width: 10, height: 5.625 }, // 触らない（16:9 固定）
+     colors: {
+       bg, primary, accent, text, subtle, faint, danger, code,
+       panelBg, cardBg, cardBorder, rowHighlight, codeBg, codeText, // 全部 6桁HEX（# なし）
+     },
+     fonts: { heading: "<見出しフォント>", body: "<本文フォント>" },
+     margin: 0.55,                                   // 本文の左右マージン(inch)
+     edge: { grad: ["<開始HEX>", "<終了HEX>"], ang: 18900044 }, // 右端の縦グラデ帯
+     // 任意（会社テンプレ風の帯を使う型のみ。無ければ accent にフォールバック）:
+     // band: "<表紙バンド>", bar: "<内容ページ帯>", barText: "FFFFFF",
+   };
+   ```
+
+2. `src/themes/index.js` の `require` と `registry` に追加する（この2行だけ）。
+3. 全 type で見え方を確認する:
+   `DECK_THEME=<name> node src/generate.js input/_theme_sampler_deck.json output/_sampler_<name>.pptx`
+4. 使うときは deck JSON の `presentation.theme: "<name>"`、または env `DECK_THEME=<name>`。
+
+### 役割キーの意味（要点）
+
+`primary`=見出し/主要テキスト、`accent`=タグ・下線・強調・ノード、`text`=本文、`subtle`/`faint`=補助テキスト（薄→より薄）、`panelBg`/`cardBg`=タイルやカードの地、`cardBorder`=枠線、`rowHighlight`=表の強調行、`codeBg`/`codeText`=コードブロック、`danger`=警告。色は**役割で考える**（「この型だけ赤くする」はしない＝デザインを発明しない原則）。
+
+### Claude Code への指示の仕方（例）
+
+テーマ作成は Claude にまかせられる。ブランドの素材があると精度が上がる:
+
+- 「**`forest` というテーマを作って。ベースは深緑 `#1B4332`、アクセントは黄緑 `#52B788`、本文フォントは Noto Sans JP。`src/themes/index.js` のコントラクトを全部埋めて、サンプラーで iroribi と navy と見比べられるように生成して**」
+- 「**この会社のブランドガイド（PDF/画像）の配色でテーマを起こして。役割キーに割り当てて、薄い地色・枠線は本文色から作って**」（画像を添付）
+- 「**既存の navy をベースに、もう少し明るい青のテーマ `sky` を派生で作って**」
+
+Claude は `src/themes/<name>.js` 作成 → `index.js` 登録 → サンプラー生成まで実行する。仕上がりを見て「タイル地をもう少し濃く」「見出しをもっと黒く」のように役割キー単位で微修正を頼めばよい。
+
+> フォントは PowerPoint を開く環境にインストールされている必要がある（無いと代替フォント表示になる）。日本語は Google Fonts の Noto Sans JP / BIZ UDPGothic など、配布されているものが無難。
 
 ## Notes
 
