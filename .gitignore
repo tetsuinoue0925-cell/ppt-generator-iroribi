@@ -1,0 +1,16 @@
+node_modules/
+output/
+*.pptx
+CLAUDE.local.md
+.DS_Store
+
+# 案件作業場は追跡しない（機密をテンプレに混ぜない）。README と .gitkeep だけ残す。
+cases/*
+!cases/README.md
+!cases/.gitkeep
+
+# 個人ローカル設定（ホスト絶対パス・権限許可リスト等）は共有しない。
+.claude/settings.local.json
+
+# 旧 POC 群。実案件（東京都港湾局）の機密を含むため絶対に公開しない。
+reference/old-input/

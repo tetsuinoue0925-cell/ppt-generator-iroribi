@@ -1,0 +1,22 @@
+services:
+  generate:
+    build: .
+    # ソースと入出力をマウント。src/schema を編集すれば再ビルド不要で反映される。
+    volumes:
+      - ./src:/app/src
+      - ./schema:/app/schema
+      - ./input:/app/input
+      - ./output:/app/output
+      - ./prompts:/app/prompts
+      - ./assets:/app/assets
+      - ./cases:/app/cases
+    command: npm run generate
+
+  validate:
+    build: .
+    volumes:
+      - ./src:/app/src
+      - ./schema:/app/schema
+      - ./input:/app/input
+      - ./cases:/app/cases
+    command: npm run validate

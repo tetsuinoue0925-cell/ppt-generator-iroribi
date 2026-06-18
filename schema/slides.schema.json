@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ppt-generator slides design",
+  "type": "object",
+  "required": ["slides"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string" },
+        "author": { "type": "string" }
+      }
+    },
+    "deck_meta": {
+      "description": "AI 設計出力のデッキ情報。生成では title のみ利用（色・フォントは theme.js が正本）。",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" }
+      }
+    },
+    "theme": {
+      "description": "AI 設計出力のテーマ希望。生成では使用しない（配色・フォントは src/theme.js を一元利用）。受理のみ。",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["layout", "title"],
+        "properties": {
+          "slide_number": { "type": "number" },
+          "layout": {
+            "type": "string",
+            "description": "使用するレイアウト名。新規追加時は /add-layout で enum も更新する。",
+            "enum": [
+              "title",
+              "message",
+              "cards_3",
+              "agenda",
+              "two_column",
+              "section",
+              "cards_4",
+              "summary",
+              "process"
+            ]
+          },
+          "title": { "type": "string" },
+          "message": { "type": "string" },
+          "speaker_notes": { "type": "string" },
+          "elements": {
+            "description": "オブジェクト形式（subtitle/bullets/cards）または配列形式（型付き要素を slot に配置）のいずれか。",
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": true,
+                "properties": {
+                  "subtitle": { "type": "string" },
+                  "bullets": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "cards": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["title"],
+                      "properties": {
+                        "title": { "type": "string" },
+                        "body": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "required": ["type"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["text", "card", "shape", "icon_placeholder", "image"]
+                    },
+                    "role": { "type": "string" },
+                    "text": { "type": "string" },
+                    "slot": { "type": "string" },
+                    "style": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "properties": {
+                        "emphasis": {
+                          "type": "string",
+                          "enum": ["high", "medium", "low"]
+                        },
+                        "font_size_hint": {
+                          "type": "string",
+                          "enum": ["large", "medium", "small"]
+                        },
+                        "align": {
+                          "type": "string",
+                          "enum": ["left", "center", "right"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

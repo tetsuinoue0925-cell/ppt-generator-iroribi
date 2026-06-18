@@ -1,0 +1,65 @@
+{
+  "presentation": { "title": "テンプレ確認デッキ", "company": "Iroribi", "theme": "iroribi" },
+  "slides": [
+    {
+      "id": "cover",
+      "type": "title-slide",
+      "content": { "h1": "AI活用 社内提案", "subtitle": "テンプレート適用の確認用サンプル", "date": "2026-06-17" }
+    },
+    {
+      "id": "toc",
+      "type": "toc",
+      "content": {
+        "title": "目次",
+        "items": ["背景と課題", "提案の全体像", "比較と選定", "スケジュール", "次のアクション"]
+      }
+    },
+    {
+      "id": "sec",
+      "type": "section-title",
+      "content": { "h2": "1. 背景と課題", "p": "なぜ今これに取り組むのか" }
+    },
+    {
+      "id": "content-bullet",
+      "type": "bullet-list",
+      "header": { "tag": "BACKGROUND", "h2": "問い合わせ対応が属人化し、過去回答の再利用ができていません。" },
+      "content": {
+        "items": [
+          { "strong": "再来する質問が6割", "subtext": "<strong>約60%</strong>が過去に答えた質問の繰り返し。" },
+          { "strong": "回答が2名に集中", "subtext": "負荷が偏り属人化している。" },
+          { "strong": "資料が探せない", "subtext": "存在するが見つからず読まれない。" }
+        ]
+      }
+    },
+    {
+      "id": "content-table",
+      "type": "table",
+      "header": { "tag": "OPTIONS", "h2": "3方式を初期コストと精度で比較し、RAG を推奨します。" },
+      "content": {
+        "headers": ["方式", "初期コスト", "精度", "備考"],
+        "rows": [
+          { "style": "", "cells": ["キーワード検索", "低", "低", "全文検索"] },
+          { "style": "background-color: #FDEBDD;", "cells": ["<strong>RAG Bot</strong>", "中", "<strong>高</strong>", "出典付き（推奨）"] },
+          { "style": "", "cells": ["増員", "高", "中", "属人化が残る"] }
+        ]
+      }
+    },
+    {
+      "id": "content-tiles",
+      "type": "tiled-content",
+      "header": { "tag": "PLAN", "h2": "3つの題材で実証します。" },
+      "content": {
+        "tiles": [
+          { "title": "Web", "body": "業務SaaSのMVP構築。", "footer": "<strong>担当:</strong> 会議で決定" },
+          { "title": "Agent", "body": "社内Bot集約。", "footer": "<strong>担当:</strong> 会議で決定" },
+          { "title": "RAG", "body": "文書QA検証。", "footer": "<strong>担当:</strong> 会議で決定" }
+        ]
+      }
+    },
+    {
+      "id": "closing",
+      "type": "closing",
+      "content": { "title": "ありがとうございました", "company": "株式会社 Iroribi" }
+    }
+  ]
+}

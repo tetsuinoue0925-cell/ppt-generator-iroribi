@@ -1,0 +1,35 @@
+{
+  "name": "ppt-generator",
+
+  // 開発・調整作業はすべてこのコンテナ内で行う。ホストには Node も依存も入れない。
+  // node 20 系で統一（バッチ用 Dockerfile / docker-compose と同じ系列）。
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+
+  "features": {
+    // コンテナ内でも Claude Code を起動できるようにする。
+    "ghcr.io/anthropics/devcontainer-features/claude-code:latest": {}
+  },
+
+  "workspaceFolder": "/workspaces/ppt-generator",
+
+  // node_modules はホストに漏らさず名前付きボリュームに隔離する。
+  // （workspace は bind マウントなので、これが無いと node_modules がホストへ書き戻る）
+  "mounts": [
+    "source=ppt-generator-node-modules,target=${containerWorkspaceFolder}/node_modules,type=volume"
+  ],
+
+  // ボリュームは root 所有で作られるため node ユーザーへ移譲 → 依存導入 → 検査ツール導入。
+  // xmllint(libxml2-utils): 生成 pptx の XML 整形式検査の標準ツール（PowerShell [xml] の代用を廃止）。
+  // unzip: pptx(zip) の中身確認用。
+  "postCreateCommand": "sudo chown node:node node_modules && npm ci && sudo apt-get update && sudo apt-get install -y libxml2-utils unzip",
+
+  "remoteUser": "node",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ppt-generator rich deck design",
+  "description": "リッチデッキ形式（Gemini/Claude Canvas 由来）。値に HTML 断片を含み得るが、生成側で装飾移植のみ行い HTML はレンダリングしない。",
+  "type": "object",
+  "required": ["slides"],
+  "additionalProperties": true,
+  "properties": {
+    "presentation": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "title": { "type": "string" },
+        "date": { "type": "string" },
+        "company": { "type": "string" }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["type"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "title-slide",
+              "toc",
+              "closing",
+              "section-title",
+              "bullet-list",
+              "two-column-mixed",
+              "two-column-tiled",
+              "tiled-content",
+              "table",
+              "bleed-image",
+              "timeline",
+              "highlight-numbers",
+              "qa-layout"
+            ]
+          },
+          "header": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "tag": { "type": "string" },
+              "h2": { "type": "string" }
+            }
+          },
+          "content": { "type": "object", "additionalProperties": true },
+          "image_url": { "type": "string" },
+          "image_alt": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "presentation": {
+    "title": "テーマ／レイアウト サンプラー",
+    "company": "Iroribi",
+    "theme": "iroribi"
+  },
+  "slides": [
+    {
+      "id": "smp-title",
+      "type": "title-slide",
+      "content": { "logo_text": "Iroribi", "h1": "サンプラー：全レイアウト確認用", "subtitle": "テーマ調整時はこのデッキを各テーマで生成して見比べる", "date": "2026-06-17" }
+    },
+    {
+      "id": "smp-toc",
+      "type": "toc",
+      "content": { "items": ["章区切りと要点列挙", "表・2カラム・タイル", "タイムライン・数値強調", "画像ブリードと Q&A"] }
+    },
+    {
+      "id": "smp-section",
+      "type": "section-title",
+      "content": { "h2": "1. 章区切りの見え方", "p": "section-title の確認" }
+    },
+    {
+      "id": "smp-bullets",
+      "type": "bullet-list",
+      "header": { "tag": "BULLET-LIST", "h2": "見出し＋補足を3〜5件で示す要点列挙の型です。" },
+      "content": {
+        "items": [
+          { "strong": "要点その1", "subtext": "補足テキスト。アクセントのマーカと本文色を確認。" },
+          { "strong": "要点その2", "subtext": "<strong>強調</strong>が混ざったときの太字の出方を確認。" },
+          { "strong": "要点その3", "subtext": "行間と余白のバランスを確認。" }
+        ]
+      }
+    },
+    {
+      "id": "smp-table",
+      "type": "table",
+      "header": { "tag": "TABLE", "h2": "ヘッダ地・罫線・強調行の色を確認します。" },
+      "content": {
+        "headers": ["#", "項目", "区分", "所要"],
+        "rows": [
+          { "style": "", "cells": ["1", "通常行", "共有", "5分"] },
+          { "style": "background-color: #FFF3E0;", "cells": ["★", "<strong>強調行</strong>", "<strong>意思決定</strong>", "10分"] },
+          { "style": "", "cells": ["2", "通常行", "共有", "5分"] }
+        ],
+        "footer": "footer のテキスト表示を確認。"
+      }
+    },
+    {
+      "id": "smp-mixed",
+      "type": "two-column-mixed",
+      "header": { "tag": "TWO-COLUMN-MIXED", "h2": "コードブロックとチェックリストの混在を確認します。" },
+      "content": {
+        "left_column": { "type": "code-block", "html": "<p># 例</p><p>node src/generate.js input/x.json output/x.pptx</p>" },
+        "right_column": { "title": "チェック項目", "items": ["・項目A", "・項目B", "・項目C"] }
+      }
+    },
+    {
+      "id": "smp-tiled2",
+      "type": "two-column-tiled",
+      "header": { "tag": "TWO-COLUMN-TILED", "h2": "対になる2枚のタイルの地色・枠を確認します。" },
+      "content": {
+        "tiles": [
+          { "title": "タイル左", "items": ["<li>項目1</li>", "<li>項目2</li>"] },
+          { "title": "タイル右", "items": ["<li>項目1</li>", "<li>項目2</li>"] }
+        ]
+      }
+    },
+    {
+      "id": "smp-tiled3",
+      "type": "tiled-content",
+      "header": { "tag": "TILED-CONTENT", "h2": "並列な3項目のタイルを確認します。" },
+      "content": {
+        "tiles": [
+          { "title": "A案", "body": "説明テキスト。", "footer": "<strong>長所:</strong> ～" },
+          { "title": "B案", "body": "説明テキスト。", "footer": "<strong>長所:</strong> ～" },
+          { "title": "C案", "body": "説明テキスト。", "footer": "<strong>長所:</strong> ～" }
+        ]
+      }
+    },
+    {
+      "id": "smp-timeline",
+      "type": "timeline",
+      "header": { "tag": "TIMELINE", "h2": "フェーズのノード・接続線・アクセントを確認します。" },
+      "content": {
+        "items": [
+          { "phase": "PHASE 1", "title": "準備", "description": "説明テキスト。" },
+          { "phase": "PHASE 2", "title": "実行", "description": "説明テキスト。" },
+          { "phase": "PHASE 3", "title": "展開", "description": "説明テキスト。" }
+        ]
+      }
+    },
+    {
+      "id": "smp-numbers",
+      "type": "highlight-numbers",
+      "header": { "tag": "HIGHLIGHT-NUMBERS", "h2": "大きな数値の強調色とラベルを確認します。" },
+      "content": {
+        "numbers": [
+          { "value": "30<span>分以内</span>", "label": "起動", "subtext": "clone から起動まで" },
+          { "value": "50<span>%以上</span>", "label": "自走率", "subtext": "介入が半分以下" },
+          { "value": "3<span>件</span>", "label": "題材", "subtext": "DoD 設定" }
+        ],
+        "footer": "<strong>付帯条件:</strong> footer のリッチテキストを確認。"
+      }
+    },
+    {
+      "id": "smp-bleed",
+      "type": "bleed-image",
+      "header": { "tag": "BLEED-IMAGE", "h2": "本文と画像プレースホルダの並びを確認します。" },
+      "content": {
+        "paragraphs": ["本文パラグラフ1。", "本文パラグラフ2。"],
+        "highlight_quote": "強調引用のスタイル確認",
+        "subtext": "補足テキスト。"
+      },
+      "image_alt": "placeholder image"
+    },
+    {
+      "id": "smp-qa",
+      "type": "qa-layout",
+      "header": { "tag": "QA-LAYOUT", "h2": "" },
+      "content": {
+        "title": "締めスライド",
+        "description": "次アクションや決定事項を示す型です。",
+        "items": ["<strong>1.</strong> 項目1", "<strong>2.</strong> 項目2", "<strong>3.</strong> 項目3"]
+      }
+    }
+  ]
+}
