@@ -29,21 +29,28 @@ module.exports = function table(pptx, slide, theme, data) {
     top += 0.5;
   }
 
-  const headers = Array.isArray(c.headers) ? c.headers : [];
-  const rows = Array.isArray(c.rows) ? c.rows : [];
+  // 正規化: rows が「配列の配列」形式の場合、先頭行をヘッダとして分離する。
+  let rawRows = Array.isArray(c.rows) ? c.rows : [];
+  let headers = Array.isArray(c.headers) ? c.headers : [];
+  if (!headers.length && rawRows.length && Array.isArray(rawRows[0])) {
+    headers = rawRows[0];
+    rawRows = rawRows.slice(1);
+  }
+  const rows = rawRows.map((r) => (Array.isArray(r) ? { cells: r } : r));
 
   // フッター用に下を確保。
   let bottom = CONTENT_BOTTOM;
   if (c.footer && stripHtml(c.footer)) bottom -= 0.7;
 
   // 列幅: 先頭が "#"/"区分" 等の短ラベルなら狭める。
+  const colCount = headers.length || (rows[0] && rows[0].cells && rows[0].cells.length) || 1;
   const colW = [];
   const firstNarrow = headers.length && stripHtml(headers[0]).length <= 2;
   if (firstNarrow) {
-    const rest = (w - 0.55) / (headers.length - 1);
-    headers.forEach((_, i) => colW.push(i === 0 ? 0.55 : rest));
+    const rest = (w - 0.55) / (colCount - 1);
+    for (let i = 0; i < colCount; i++) colW.push(i === 0 ? 0.55 : rest);
   } else {
-    headers.forEach(() => colW.push(w / headers.length));
+    for (let i = 0; i < colCount; i++) colW.push(w / colCount);
   }
 
   const tableRows = [];

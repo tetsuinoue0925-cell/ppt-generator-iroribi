@@ -29,6 +29,7 @@ module.exports = function bulletList(pptx, slide, theme, data) {
   const rowH = (CONTENT_BOTTOM - top - gap * (items.length - 1)) / items.length;
 
   items.forEach((it, i) => {
+    if (typeof it === 'string') it = { strong: it };
     const y = top + i * (rowH + gap);
 
     // アクセントのマーカ。
