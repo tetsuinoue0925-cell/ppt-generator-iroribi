@@ -1,0 +1,478 @@
+{
+  "presentation": {
+    "title": "先行技術分析パイプライン（tech-trend-analyzer）活動報告",
+    "date": "2026年7月24日",
+    "company": "Iroribi Inc.",
+    "theme": "iroribi"
+  },
+  "slides": [
+    {
+      "id": "1",
+      "type": "title-slide",
+      "content": {
+        "h1": "先行技術分析パイプライン（tech-trend-analyzer）活動報告",
+        "subtitle": "特許PDFの自動読解からBERTによる新規性判定、Claudeによる新規事業アイデア生成まで",
+        "date": "2026年7月24日"
+      }
+    },
+    {
+      "id": "2",
+      "type": "bullet-list",
+      "header": {
+        "tag": "BACKGROUND",
+        "h2": "先行技術分析機能の目的：ホワイトスペースの可視化と新規性ある発明アイデアの抽出"
+      },
+      "content": {
+        "items": [
+          {
+            "strong": "ツール全体の目的",
+            "subtext": "技術潮流分析 × 新規事業ネタ抽出（tech-trend-analyzer）"
+          },
+          {
+            "strong": "先行技術分析の目的",
+            "subtext": "狙っている発明・出願候補が既存特許でどこまでカバーされているかを定量化し、新規性・進歩性のあるホワイトスペースを発見する"
+          },
+          {
+            "strong": "従来との違い",
+            "subtext": "人手での類似特許の読み比べ作業を、BERTによるベクトル化と類似度計算で半自動化"
+          },
+          {
+            "strong": "最終アウトプット",
+            "subtext": "新規性のある発明アイデアの言語化（Claudeによる生成）"
+          }
+        ]
+      }
+    },
+    {
+      "id": "3",
+      "type": "table",
+      "header": {
+        "tag": "REFERENCE",
+        "h2": "参考にした特許4件と手法論：クレームチャート・特許マップ・新規性補強・技術俯瞰"
+      },
+      "content": {
+        "pre_text": "先行技術分析のロジックは、以下4件の特許の手法を参考に設計されている。",
+        "headers": ["特許番号", "参考にした手法"],
+        "rows": [
+          { "cells": ["JP7004951", "クレームチャート（請求項の構成要素分解・対比表）"] },
+          { "cells": ["JP7109126", "特許マップ（技術空間の2次元マッピング）"] },
+          { "cells": ["JP7193890", "第2IPC・追加情報による新規性補強判定"] },
+          { "cells": ["JP7029204", "技術俯瞰情報（IPC上位概念によるカテゴリ化）"] }
+        ],
+        "footer": "4件のPDFは開発初期にリファレンスとして取り込み済み。excel-patent-analysis / prior-art-analysis の両Claude Skillが共通してこの手法論を踏襲。"
+      }
+    },
+    {
+      "id": "4",
+      "type": "timeline",
+      "header": {
+        "tag": "OVERVIEW",
+        "h2": "全体パイプラインは5ステップ：手作業の特許収集から自動処理、Claudeとの対話まで"
+      },
+      "content": {
+        "items": [
+          {
+            "phase": "Step 1",
+            "title": "J-PlatPatで特許検索・PDF/CSVダウンロード",
+            "description": "手作業。キーワード検索で関連特許を抽出し、特許公報PDFと特許リストCSVをダウンロード。"
+          },
+          {
+            "phase": "Step 2",
+            "title": "prior_art_input/ フォルダへ保存",
+            "description": "手作業。ダウンロードした PDF・Excel を所定フォルダに配置（プログラムの起点）。"
+          },
+          {
+            "phase": "Step 3",
+            "title": "PDF読み込み・セクション分解 → Phase1 CSV出力",
+            "description": "自動処理（prior_art_main.py）。pdfplumber で抽出・構造化し 12列CSV を出力。"
+          },
+          {
+            "phase": "Step 4",
+            "title": "BERTベクトル化（パターン3：LLMなし）",
+            "description": "自動処理。請求項をBERTでベクトル化しコサイン類似度を計算。novelty_prompt を生成。"
+          },
+          {
+            "phase": "Step 5",
+            "title": "novelty_prompt_for_claude.txt をClaudeに渡してアイデア生成",
+            "description": "Claudeとの対話。プロンプトを貼り付けて新規性・進歩性のある発明アイデアを生成させる。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "5",
+      "type": "bullet-list",
+      "header": {
+        "tag": "STEP 1",
+        "h2": "J-PlatPatで特許検索・PDF/CSVダウンロード：対象技術分野の先行技術を人手で収集"
+      },
+      "content": {
+        "items": [
+          {
+            "strong": "特許情報プラットフォーム「J-PlatPat」でキーワード検索",
+            "subtext": "対象技術分野の関連特許を抽出し、後続プログラム処理の入力データを確保する。"
+          },
+          {
+            "strong": "ダウンロード対象は2種類",
+            "subtext": "特許公報PDF（各特許ごと） ／ 特許リストCSV（出願人・発明の名称等のメタデータ）"
+          },
+          {
+            "strong": "手作業工程（プログラム対象外）",
+            "subtext": "人手による特許調査・目利きが必要。出願公開公報（A）・登録公報（B）の両方が対象。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "6",
+      "type": "bullet-list",
+      "header": {
+        "tag": "STEP 2",
+        "h2": "ダウンロードした PDF・CSV を prior_art_input/ へ配置：プログラムの起点フォルダ"
+      },
+      "content": {
+        "items": [
+          {
+            "strong": "格納先：tech-trend-analyzer/prior_art_input/",
+            "subtext": "特許公報PDFと特許リストExcel（例：特実_国内文献 v3.xlsx）を保存。"
+          },
+          {
+            "strong": "ファイル命名パターン",
+            "subtext": "出願公開：JP,YYYY-NNNNNN,A.pdf ／ 登録特許：JP,NNNNNNN,B.pdf"
+          },
+          {
+            "strong": "現状の格納数：PDF 102件",
+            "subtext": "プログラムはこのフォルダを起点に全自動処理を開始する。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "7",
+      "type": "bullet-list",
+      "header": {
+        "tag": "STEP 3",
+        "h2": "PDF読み込み・セクション分解・Excel補完 → Phase1 CSV出力：12列の構造化データへ変換"
+      },
+      "content": {
+        "pre_text": "実行コマンド：.venv/bin/python3.12 prior_art_main.py --phase1-only --no-llm",
+        "items": [
+          {
+            "strong": "pdfplumber でPDFからテキスト抽出",
+            "subtext": "請求項・技術分野・背景技術・課題等のセクションに自動分解。"
+          },
+          {
+            "strong": "Excel特許リストとのマッチング・補完",
+            "subtext": "文献番号でマッチングし、出願人・発明の名称を補完する。"
+          },
+          {
+            "strong": "LLMフォールバックによる補助抽出",
+            "subtext": "構造化が難しい記述はLLMフォールバックで抽出を補助。"
+          },
+          {
+            "strong": "出力：output/phase1_claims_and_descriptions.csv（12列）",
+            "subtext": "BERTを使わないため数分で完了。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "8",
+      "type": "table",
+      "header": {
+        "tag": "STEP 3 詳細",
+        "h2": "Phase1 CSVの12列構成：文献番号・出願人から請求項・課題・効果まで構造化"
+      },
+      "content": {
+        "headers": ["列", "内容"],
+        "rows": [
+          { "cells": ["A", "文献番号（例：特開2023-126037）"] },
+          { "cells": ["B", "出願人"] },
+          { "cells": ["C", "発明の名称"] },
+          { "cells": ["D", "要約"] },
+          { "style": "background-color: #FFF3E0;", "cells": ["E", "請求項１"] },
+          { "cells": ["F", "技術分野"] },
+          { "cells": ["G", "背景技術"] },
+          { "cells": ["H", "特許文献"] },
+          { "style": "background-color: #FFF3E0;", "cells": ["I", "発明が解決しようとする課題"] },
+          { "cells": ["J", "課題を解決するための手段"] },
+          { "cells": ["K", "発明の効果"] },
+          { "cells": ["L", "発明の詳細説明〜図面前の要約（約400字）"] }
+        ]
+      }
+    },
+    {
+      "id": "9",
+      "type": "bullet-list",
+      "header": {
+        "tag": "STEP 4",
+        "h2": "BERTベクトル化（パターン3）：請求項をベクトル化しコサイン類似度で新規性を数値化"
+      },
+      "content": {
+        "pre_text": "実行コマンド：.venv/bin/python3.12 prior_art_main.py --no-modernbert --no-luke --no-llm",
+        "items": [
+          {
+            "strong": "全先行技術PDFの請求項をBERT（cl-tohoku）でベクトル化",
+            "subtext": "コサイン類似度を計算して新規性を定量評価。"
+          },
+          {
+            "strong": "重いモデル（ModernBERT・LUKE）とClaude APIはスキップ",
+            "subtext": "コスト・レート制限を気にせずワークフローを回せる設計。"
+          },
+          {
+            "strong": "--no-llm でもプロンプトファイルを必ず生成",
+            "subtext": "出力：output/novelty_prompt_for_claude.txt（Claudeに貼り付けるためのプロンプト）"
+          }
+        ]
+      }
+    },
+    {
+      "id": "10",
+      "type": "table",
+      "header": {
+        "tag": "STEP 4 詳細",
+        "h2": "使用モデル一覧：BERT・ModernBERT・LUKE・Claude API の役割と実行制御"
+      },
+      "content": {
+        "headers": ["モデル", "役割", "スキップオプション"],
+        "rows": [
+          { "style": "background-color: #FFF3E0;", "cells": ["cl-tohoku/bert-base-japanese-v3", "請求項のBERT埋め込み（768次元）・コサイン類似度計算", "--no-bert"] },
+          { "cells": ["ModernBERT系（ku-nlp/deberta-v2-large-japanese 等）", "長文の詳細説明処理（スライディングウィンドウ）", "--no-modernbert"] },
+          { "cells": ["studio-ousia/luke-japanese-large-lite", "技術エンティティ抽出（NER）", "--no-luke"] },
+          { "cells": ["Claude API（claude-opus-4-8）", "新規性・進歩性のある特許特徴の言語化（最大10件）", "--no-llm"] }
+        ],
+        "footer": "パターン3（今回の実行方式）はBERTのみ実行し、他はスキップ。"
+      }
+    },
+    {
+      "id": "11",
+      "type": "table",
+      "header": {
+        "tag": "STEP 4 詳細",
+        "h2": "新規性判定の3分類ロジック：コサイン類似度の閾値で covered / gray_zone / novel を判定"
+      },
+      "content": {
+        "headers": ["分類", "条件", "意味"],
+        "rows": [
+          { "cells": ["covered（カバー済み）", "最大類似度 ≥ 0.85", "先行技術でカバーされている可能性が高い"] },
+          { "cells": ["gray_zone（グレーゾーン）", "0.60 〜 0.85", "要検討"] },
+          { "style": "background-color: #FFF3E0;", "cells": ["novel（新規性あり）", "最大類似度 ≤ 0.60", "先行技術と異なる可能性が高い"] }
+        ],
+        "footer": "novelty_score = 1.0 - 最大類似度（スコアが高いほど新規性の可能性が高い）。直近の開発では「文書単位」から「請求項単位」へリファクタ中。"
+      }
+    },
+    {
+      "id": "12",
+      "type": "bullet-list",
+      "header": {
+        "tag": "STEP 5",
+        "h2": "novelty_prompt_for_claude.txt をClaudeに貼り付けてアイデアを生成：APIコストゼロで対話的に磨き込む"
+      },
+      "content": {
+        "items": [
+          {
+            "strong": "ステップ4で生成されたプロンプトをClaudeに手動で貼り付け",
+            "subtext": "Claude APIを使わず、Claude（対話）に直接貼り付けて新規性・進歩性のある発明アイデアを生成させる。"
+          },
+          {
+            "strong": "プロンプトには4要素が含まれる",
+            "subtext": "全請求項の内容 ／ 希少エンティティ（1回しか出現しない技術要素） ／ 新規性判定結果 ／ アイデア生成の依頼文"
+          },
+          {
+            "strong": "APIコストゼロで人がアイデアの質を対話的に磨き込める",
+            "subtext": "Claude APIを経由しないため、コスト・レート制限を気にせずアイデアを反復改善できる。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "13",
+      "type": "table",
+      "header": {
+        "tag": "OUTPUTS",
+        "h2": "出力ファイル一覧：CSV・HTMLチャート・プロンプト・JSON・Excel・DB の8種類"
+      },
+      "content": {
+        "headers": ["ファイルパス", "内容", "生成タイミング"],
+        "rows": [
+          { "cells": ["output/phase1_claims_and_descriptions.csv", "12列CSV", "Phase 1完了後"] },
+          { "cells": ["output/charts/patent_map.html", "請求項の2Dマップ（密集=カバー済み、希薄=ホワイトスペース）", "Phase 3完了後"] },
+          { "cells": ["output/charts/claim_chart.html", "請求項間のクレームチャート", "Phase 4完了後"] },
+          { "cells": ["output/charts/claim_similarity_heatmap.html", "ドキュメント間コサイン類似度ヒートマップ", "Phase 4完了後"] },
+          { "style": "background-color: #FFF3E0;", "cells": ["output/novelty_prompt_for_claude.txt", "Claude貼り付け用プロンプト", "Phase 5完了後（--no-llm でも生成）"] },
+          { "cells": ["output/prior_art_analysis.json", "全分析結果の構造化JSON", "Phase 6完了後"] },
+          { "cells": ["output/novelty_report.xlsx", "7シート構成のExcelレポート", "Phase 6完了後"] },
+          { "cells": ["data/tech_trend.db", "SQLiteへの永続化", "Phase 6完了後"] }
+        ]
+      }
+    },
+    {
+      "id": "14",
+      "type": "highlight-numbers",
+      "header": {
+        "tag": "RESULTS",
+        "h2": "検証済み実行結果（67件PDF）：630請求項中99.7%がカバー済み、残り候補から新規アイデアを創出"
+      },
+      "content": {
+        "numbers": [
+          { "value": "67件", "label": "分析済み先行技術PDF", "subtext": "（現在102件まで拡大）" },
+          { "value": "630件", "label": "総請求項数", "subtext": "2026-06-11時点" },
+          { "value": "99.7%", "label": "カバー済み請求項", "subtext": "628件が先行技術でカバー" }
+        ],
+        "footer": "ホワイトスペースIPC候補：B60W、G01C、F15B、G06T、G06N、G08G、F01N、F02D"
+      }
+    },
+    {
+      "id": "15",
+      "type": "bullet-list",
+      "header": {
+        "tag": "IDEATION",
+        "h2": "Claudeが生成した新規発明アイデア5件：最推奨はアイデア2（旋回軌道協調）とアイデア5（点群融合）"
+      },
+      "content": {
+        "pre_text": "06-11時点の分析結果から、Claudeにより5件の発明アイデアを生成（★は推奨度）",
+        "items": [
+          {
+            "strong": "走行＋作業機同時操作時のアダプティブ負荷配分制御（★★★★）",
+            "subtext": "各アイデアには根拠・技術内容・想定クレーム構成要素・引用先行技術との差別化ポイントが付随。"
+          },
+          {
+            "strong": "複数機械のリアルタイム旋回軌道協調制御（★★★★★・最推奨）",
+            "subtext": "引用先行技術からの差別化が最も明確。"
+          },
+          {
+            "strong": "燃料電池廃熱回収×水素消費最適化（★★★★）",
+            "subtext": "補足的な位置付け。"
+          },
+          {
+            "strong": "バケット内土砂含水率のリアルタイム推定×積載最適化（★★★★）",
+            "subtext": "次点推奨。"
+          },
+          {
+            "strong": "点群×映像融合による予測ダンプ制御（★★★★★・最推奨）",
+            "subtext": "センサー融合の新規性が高い。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "16",
+      "type": "two-column-tiled",
+      "header": {
+        "tag": "IMPROVEMENTS",
+        "h2": "アーキテクチャの進化：類似度計算の粒度を文書単位から請求項単位へ刷新"
+      },
+      "content": {
+        "tiles": [
+          {
+            "title": "主要改善：請求項単位リファクタ",
+            "body": "類似度計算を文書単位 → 請求項単位へリファクタ中。発明の権利範囲は請求項ごとに独立しているため、より精密な新規性判定が可能に。特許マップ（Phase 3）も請求項単位でプロットするよう変更。"
+          },
+          {
+            "title": "その他の改善",
+            "body": "--phase1-only フラグを新設（CSV確認だけを高速に実行するニーズに対応）。Claude APIモデルを claude-opus-4-6 → claude-opus-4-8 へ更新。新規性特徴の生成件数上限を5件 → 10件に拡大。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "17",
+      "type": "timeline",
+      "header": {
+        "tag": "HISTORY",
+        "h2": "開発タイムライン：2026-06-03〜06-09の7日間・5コミットで集中的に構築"
+      },
+      "content": {
+        "items": [
+          {
+            "phase": "06-03",
+            "title": "初期構築",
+            "description": "prior_art_main.py・prior_art_analyzer.py・config.yaml 等一式を追加。参考特許PDF・初期特許リストExcelを投入。"
+          },
+          {
+            "phase": "06-04",
+            "title": "CSV出力・BERTベクトル化を実装",
+            "description": "Phase1 CSV出力・Phase2A BERTベクトル化を実装。prior_art_input/ のPDFを拡充。"
+          },
+          {
+            "phase": "06-08",
+            "title": "特許リストExcel更新 + Claude Skills追加",
+            "description": "特許リストExcelを更新。8種のClaude Skills（fetch-patents等）を追加。"
+          },
+          {
+            "phase": "06-09",
+            "title": "export-to-notion スキルを移設",
+            "description": "export-to-notion スキルをプロジェクト配下へ移設。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "18",
+      "type": "table",
+      "header": {
+        "tag": "SKILLS",
+        "h2": "関連するClaude Skills体系：データ収集から分析・アイデア生成・エクスポートまで8スキル"
+      },
+      "content": {
+        "pre_text": "tech-trend-analyzer/.claude/skills/ 配下の8スキル",
+        "headers": ["スキル", "役割"],
+        "rows": [
+          { "cells": ["fetch-patents", "EPO OPS APIから特許データ取得"] },
+          { "cells": ["fetch-papers", "OpenAlex APIから学術論文データ取得"] },
+          { "cells": ["collect-and-analyze", "データ取得＋トレンド分析を一括実行"] },
+          { "cells": ["trend-analysis", "IPC時系列・TF-IDF・クロス分析・ホワイトスペース探索"] },
+          { "cells": ["excel-patent-analysis", "Excel特許リストのFI＋セマンティック複合類似度分析"] },
+          { "style": "background-color: #FFF3E0;", "cells": ["prior-art-analysis", "本資料の対象：先行技術PDFの技術空間マッピング・新規性判定"] },
+          { "cells": ["business-ideation", "分析結果から新規事業アイデアを3案生成"] },
+          { "cells": ["export-to-notion", "分析結果をNotionインポート用Markdownとして保存"] }
+        ]
+      }
+    },
+    {
+      "id": "19",
+      "type": "bullet-list",
+      "header": {
+        "tag": "ROADMAP",
+        "h2": "今後の課題・展望：102件コーパスでのフル再実行と請求項単位リファクタの完了が最優先"
+      },
+      "content": {
+        "items": [
+          {
+            "strong": "拡大した現行コーパス（PDF 102件）でのフル再実行",
+            "subtext": "直近のJSON実績は過渡的な値で信頼性が低い。最新コーパスでの本実行（再計算）が必要。"
+          },
+          {
+            "strong": "請求項単位リファクタの完了・コミット化",
+            "subtext": "現在作業ツリー（未コミット）での改善を正式にコミットする。"
+          },
+          {
+            "strong": "定期的な特許検索〜分析のサイクル運用化",
+            "subtext": "現状は手作業ステップ①②（J-PlatPat検索・ダウンロード）がボトルネック。"
+          },
+          {
+            "strong": "新規性アイデア生成（ステップ5）の評価・出願検討プロセスとの接続",
+            "subtext": "生成したアイデアを特許出願検討フローにつなぐ仕組みを整備する。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "20",
+      "type": "qa-layout",
+      "header": {
+        "tag": "SUMMARY",
+        "h2": "一気通貫パイプラインを構築済み：検証実績67件から102件への拡大と請求項単位精度向上を継続"
+      },
+      "content": {
+        "title": "まとめ",
+        "description": "J-PlatPat検索 → PDF格納 → Phase1 CSV化 → BERTベクトル化・新規性判定 → Claudeによるアイデア生成という一気通貫のパイプラインを構築済み。",
+        "items": [
+          "検証済み実行例（67件PDF）では630請求項中99.7%が先行技術でカバー済みと判定",
+          "残る新規性候補から質の高い発明アイデアを複数創出（最推奨：アイデア2・5）",
+          "現在はより大規模なコーパス（102件）への対応と、請求項単位での精度向上に向けたリファクタを継続中"
+        ]
+      }
+    }
+  ]
+}
